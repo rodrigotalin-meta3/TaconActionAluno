@@ -3,8 +3,8 @@ package br.com.meta3.java.scaffold.api.controllers;
 import br.com.meta3.java.scaffold.api.dtos.ArquivoSecSmecResponse;
 import br.com.meta3.java.scaffold.api.dtos.AlunoRgResponse;
 import br.com.meta3.java.scaffold.domain.services.ArquivoService;
-import br.com.meta3.java.scaffold.application.services.ArquivoServiceImpl.ArquivoSecSmec;
-import br.com.meta3.java.scaffold.application.services.ArquivoServiceImpl.AlunoRgInfo;
+import br.com.meta3.java.scaffold.domain.entities.ArquivoSecSmec;
+import br.com.meta3.java.scaffold.domain.entities.AlunoRgInfo;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +15,16 @@ import java.util.stream.Collectors;
  * REST controller exposing endpoints for:
  *  - listing files sent by SEC/SMEC
  *  - listing students older than 10 without RG
+ *
+ * Migration note:
+ * - Previously this controller depended on inner DTO types declared inside the service implementation
+ *   (ArquivoServiceImpl.ArquivoSecSmec and ArquivoServiceImpl.AlunoRgInfo). That creates a tight coupling
+ *   to the implementation class. We now depend on domain-level entities:
+ *     br.com.meta3.java.scaffold.domain.entities.ArquivoSecSmec
+ *     br.com.meta3.java.scaffold.domain.entities.AlunoRgInfo
+ *
+ * TODO: (REVIEW) If domain entities evolve to use different field types (e.g., dates as LocalDate),
+ * update mappings here to format them into strings expected by the API DTOs.
  */
 @RestController
 public class ArquivoController {
@@ -39,9 +49,10 @@ public class ArquivoController {
             @RequestParam("anoBase") String anoBase,
             @RequestParam("codigoTitular") String codigoTitular) {
 
+        // Use domain-level ArquivoSecSmec returned by the service
         List<ArquivoSecSmec> arquivos = arquivoService.listarArquivosEnviadosSecSmec(mes, anoBase, codigoTitular);
 
-        // Map service-layer DTOs to API response DTOs
+        // Map domain entities to API response DTOs
         List<ArquivoSecSmecResponse> responseList = arquivos.stream()
                 .map(a -> new ArquivoSecSmecResponse(
                         a.getNomeArquivo(),
@@ -64,9 +75,10 @@ public class ArquivoController {
             @RequestParam("codigos") String codigos,
             @RequestParam("codigoTitular") String codigoTitular) {
 
+        // Use domain-level AlunoRgInfo returned by the service
         List<AlunoRgInfo> alunosInfo = arquivoService.verificaRgAlunos(codigos, codigoTitular);
 
-        // Map service-layer DTOs to API response DTOs
+        // Map domain DTOs to API response DTOs
         List<AlunoRgResponse> responseList = alunosInfo.stream()
                 .map(info -> new AlunoRgResponse(
                         info.getCodDependente(),

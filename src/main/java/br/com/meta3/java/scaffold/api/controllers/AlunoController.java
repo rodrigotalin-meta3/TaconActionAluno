@@ -30,6 +30,14 @@ public class AlunoController {
      * Endpoint to create a new Aluno record.
      * Extracts client IP, invokes the domain service, and returns result.
      *
+     * Migration decision notes:
+     * - Legacy flow recorded client IP, operation type and email when inserting into the legacy system.
+     * - AlunoRequest currently contains 'nome' and 'email'. There is no explicit 'tipo' in the DTO, so
+     *   we preserve legacy behaviour by using the operation type "INCLUSAO" for create operations.
+     * - We keep validation via @Valid on AlunoRequest so malformed payloads are rejected by framework.
+     * - If in the future an operation type must be supplied by the client, consider adding a field to AlunoRequest
+     *   or accepting a header/parameter. Prefer explicit DTO field to avoid hidden behavior.
+     *
      * @param alunoRequest DTO with Aluno creation data
      * @param request      HTTP servlet request to extract client IP
      * @return AlunoResponse indicating success and reset flag
@@ -44,7 +52,9 @@ public class AlunoController {
 
         // Retrieve email from AlunoRequest to pass into service
         String email = alunoRequest.getEmail();
-        // TODO: (REVIEW) Consider passing additional fields (e.g., nome) if service signature is updated
+
+        // Legacy behaviour: operation type stored as "INCLUSAO" for creation flows.
+        // TODO: (REVIEW) If clients need to supply operation type, extend AlunoRequest or accept a request param/header.
         int resultado = alunoService.inserirAluno(ipCliente, "INCLUSAO", email);
 
         boolean sucesso = (resultado == 1);

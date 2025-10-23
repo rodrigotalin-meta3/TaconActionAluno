@@ -2,6 +2,7 @@ package br.com.meta3.java.scaffold.application.services;
 
 import br.com.meta3.java.scaffold.domain.services.ArquivoService;
 import br.com.meta3.java.scaffold.domain.entities.ArquivoSecSmec;
+import br.com.meta3.java.scaffold.domain.entities.AlunoRgInfo;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
@@ -101,7 +102,7 @@ public class ArquivoServiceImpl implements ArquivoService {
                 + "  and trim(dpd.dpd_num_identid) is null "
                 + "order by alu.nome_dependente";
 
-        // TODO: (REVIEW) Inlining list into SQL risks SQL injection; consider NamedParameterJdbcTemplate
+        // TODO: (REVIEW) Inlining list into SQL risks SQL injection; consider NamedParameterJdbcTemplate with a proper collection parameter.
         return jdbcTemplate.query(
                 sql,
                 new Object[]{codigoTitular},
@@ -119,45 +120,9 @@ public class ArquivoServiceImpl implements ArquivoService {
         );
     }
 
-    /**
-     * DTO for alunos without RG returned by verificaRgAlunos.
-     */
-    public static class AlunoRgInfo {
-        private long codDependente;
-        private String matricula;
-        private String nomeDependente;
-        private String dataNascimento;
-
-        public long getCodDependente() {
-            return codDependente;
-        }
-
-        public void setCodDependente(long codDependente) {
-            this.codDependente = codDependente;
-        }
-
-        public String getMatricula() {
-            return matricula;
-        }
-
-        public void setMatricula(String matricula) {
-            this.matricula = matricula;
-        }
-
-        public String getNomeDependente() {
-            return nomeDependente;
-        }
-
-        public void setNomeDependente(String nomeDependente) {
-            this.nomeDependente = nomeDependente;
-        }
-
-        public String getDataNascimento() {
-            return dataNascimento;
-        }
-
-        public void setDataNascimento(String dataNascimento) {
-            this.dataNascimento = dataNascimento;
-        }
-    }
+    // NOTE:
+    // - The inner DTO previously declared here (ArquivoServiceImpl.AlunoRgInfo) was removed intentionally.
+    // - We now use the domain-level br.com.meta3.java.scaffold.domain.entities.AlunoRgInfo so controllers and services
+    //   can share the same type and avoid duplication.
+    // TODO: (REVIEW) Consider migrating date handling to LocalDate in AlunoRgInfo if callers are updated to use typed dates.
 }
